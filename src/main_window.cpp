@@ -2107,35 +2107,36 @@ void MainWindow::sendNotify(SaveAction saveAction, QString saveFilePath, const b
         exit(0);
     }
 
-    QDBusInterface remote_dde_notify_obj("com.deepin.dde.Notification", "/com/deepin/dde/Notification",
-                                         "com.deepin.dde.Notification");
+    // QDBusInterface remote_dde_notify_obj("com.deepin.dde.Notification", "/com/deepin/dde/Notification",
+    //                                      "com.deepin.dde.Notification");
 
-    const bool remote_dde_notify_obj_exist = remote_dde_notify_obj.isValid();
+    // const bool remote_dde_notify_obj_exist = remote_dde_notify_obj.isValid();
 
-    QDBusInterface notification("org.freedesktop.Notifications",
-                                "/org/freedesktop/Notifications",
-                                "org.freedesktop.Notifications",
-                                QDBusConnection::sessionBus());
+    // QDBusInterface notification("org.freedesktop.Notifications",
+    //                             "/org/freedesktop/Notifications",
+    //                             "org.freedesktop.Notifications",
+    //                             QDBusConnection::sessionBus());
+    QDBusInterface notification("org.kde.VisualNotifications", "/VisualNotifications", "org.kde.VisualNotifications");
 
 
     QStringList actions;
     QVariantMap hints;
 
-    if (remote_dde_notify_obj_exist) {
-        actions << "_open" << tr("View");
+    // if (remote_dde_notify_obj_exist) {
+    //     actions << "_open" << tr("View");
 
-        QString fileDir  = QUrl::fromLocalFile(QFileInfo(saveFilePath).absoluteDir().absolutePath()).toString();
-        QString filePath = QUrl::fromLocalFile(saveFilePath).toString();
+    //     QString fileDir  = QUrl::fromLocalFile(QFileInfo(saveFilePath).absoluteDir().absolutePath()).toString();
+    //     QString filePath = QUrl::fromLocalFile(saveFilePath).toString();
 
-        QString command;
-        if (QFile("/usr/bin/dde-file-manager").exists()) {
-            command = QString("/usr/bin/dde-file-manager,--show-item,%1").arg(filePath);
-        } else {
-            command = QString("xdg-open,%1").arg(filePath);
-        }
+    //     QString command;
+    //     if (QFile("/usr/bin/dde-file-manager").exists()) {
+    //         command = QString("/usr/bin/dde-file-manager,--show-item,%1").arg(filePath);
+    //     } else {
+    //         command = QString("xdg-open,%1").arg(filePath);
+    //     }
 
-        hints["x-deepin-action-_open"] = command;
-    }
+    //     hints["x-deepin-action-_open"] = command;
+    // }
 
     qDebug() << "saveFilePath:" << saveFilePath;
 
@@ -2167,7 +2168,7 @@ void MainWindow::sendNotify(SaveAction saveAction, QString saveFilePath, const b
     notification.callWithArgumentList(QDBus::AutoDetect, "Notify", arg);// timeout
 //    }
 
-    QTimer::singleShot(2, [ = ] {
+    QTimer::singleShot(200, [ = ] {
         emit releaseEvent();
         if (QSysInfo::currentCpuArchitecture().startsWith("x86") && m_isZhaoxin == false)
         {
@@ -2490,6 +2491,8 @@ bool MainWindow::saveAction(const QPixmap &pix)
 
     QMimeData *t_imageData = new QMimeData;
     t_imageData->setImageData(screenShotPix);
+    // t_imageData->setImageData(screenShotPix.toImage());
+    t_imageData->setData(QStringLiteral("x-kde-force-image-copy"), QByteArray());
 
     if (m_copyToClipboard) {
         Q_ASSERT(!screenShotPix.isNull());
@@ -2497,7 +2500,7 @@ bool MainWindow::saveAction(const QPixmap &pix)
 //        cb->setPixmap(screenShotPix, QClipboard::Clipboard);
         cb->setMimeData(t_imageData, QClipboard::Clipboard);
 
-        qDebug() << "clip board success!";
+        qDebug() << "kde clip board success!";
     }
 
     return true;
